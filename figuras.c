@@ -1,3 +1,4 @@
+/*Hecho por Dezcorjm*/
 #include "figuras.h"
 //Identificador de color.
 GLfloat xpos=0, zpos=0,next=0;
@@ -60,7 +61,7 @@ void dibujarFiguras()
   {
     glLineWidth(1.0);
     if(star->STIPPLE) glEnable(GL_LINE_STIPPLE);
-    glLineStipple(1,star->Nx); 
+    glLineStipple(1,star->Nx);
     FiguraSelecionada[star->type].Dibujar(star);
     if(star->STIPPLE)glDisable(GL_LINE_STIPPLE); // DESHABILITAMOS LA PROPIEDAD STIPPLE
     star=star->next;
@@ -176,7 +177,7 @@ void ControlRaton( int button, int state, int x, int y )
     }
     if (button==GLUT_RIGHT_BUTTON && state==GLUT_DOWN)
     {
-        
+
         if(Figuras.index!=NULL)
         if ((Figuras.index->type==TYPEPOLIGONOI))
         {
@@ -324,7 +325,7 @@ void setlist(LISTA* list)
     {
       aux=aux->next;
     }
-    
+
     aux->next=list;
     aux->next->next=NULL;
     PUNTO *aux1,*Vector;
@@ -372,7 +373,7 @@ void setlistP(GLint x, GLint y)
         Figuras.index->Nx=Nx;
         Figuras.index->color=color;
     }
-        
+
     if(Figuras.index->V==NULL)
     {
         Figuras.index->V=(PUNTO*)malloc(sizeof(PUNTO));
@@ -439,26 +440,3 @@ void DibujarSelect()
 	glEnd();
     glDisable(GL_LINE_STIPPLE);// DESHABILITAMOS LA PROPIEDAD STIPPLE
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

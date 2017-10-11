@@ -1,3 +1,4 @@
+/*Hecho por Dezcorjm*/
 #ifndef _FIGURAS_H_
 #define _FIGURAS_H_
 

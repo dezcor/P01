@@ -1,3 +1,4 @@
+/*Hecho por Dezcorjm*/
 #include "figuras.h"//linux
 
 int main(int argc, char** argv)
