@@ -1,4 +1,3 @@
-/*Hecho por Dezcorjm*/
 #ifndef _FIGURAS_H_
 #define _FIGURAS_H_
 
@@ -54,49 +53,7 @@ typedef struct punto
     GLdouble X,Y;
     struct punto *next;
 }PUNTO;
-/*
-typedef struct line{
-    GLdouble Xi;
-    GLdouble Yi;
-    GLdouble Xf;
-    GLdouble Yf;
-}LINEA;
 
-typedef struct cuadrado
-{
-    GLdouble X,Y;
-    GLfloat Lado;
-}CUADRADO;
-
-
-typedef struct rect
-{
-    GLdouble X,Y;
-    GLfloat ancho;
-    GLfloat alto;
-}RECTANGULO;
-
-
-typedef struct poligono
-{
-    unsigned char NLados;
-    PUNTO *V;
-}POLIGONOI;
-typedef struct circulo
-{
-    GLfloat x0;
-    GLfloat y0;
-    GLfloat r;
-}CIRCULO;
-
-
-typedef struct elipse
-{
-    GLfloat x0;
-    GLfloat y0;
-    GLfloat a,b,th;
-}ELIPSE;
-*/
 typedef struct lista{
   PUNTO * V;
   GLint Nv;
@@ -107,6 +64,7 @@ typedef struct lista{
   struct lista *next;
 }LISTA;
 typedef struct figuras{
+    int numero;
   LISTA *index;
   LISTA *Plist;
 }FIGURAS;

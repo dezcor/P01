@@ -1,4 +1,3 @@
-/*Hecho por Dezcorjm*/
 #include "figuras.h"
 //Identificador de color.
 GLfloat xpos=0, zpos=0,next=0;
@@ -61,7 +60,7 @@ void dibujarFiguras()
   {
     glLineWidth(1.0);
     if(star->STIPPLE) glEnable(GL_LINE_STIPPLE);
-    glLineStipple(1,star->Nx);
+    glLineStipple(1,star->Nx); 
     FiguraSelecionada[star->type].Dibujar(star);
     if(star->STIPPLE)glDisable(GL_LINE_STIPPLE); // DESHABILITAMOS LA PROPIEDAD STIPPLE
     star=star->next;
@@ -72,8 +71,8 @@ void linea(LISTA* list)
 {
     AsignaColor(list->color);
     glBegin(GL_LINES);
-    glVertex2f(list->V[0].X/Px+xmin,list->V[0].Y/Py-ymin);
-    glVertex2f(list->V[1].X/Px+xmin,list->V[1].Y/Py-ymin);
+    glVertex2f(list->V[0].X,list->V[0].Y);
+    glVertex2f(list->V[1].X,list->V[1].Y);
     glEnd();
 }
 
@@ -91,7 +90,7 @@ void cuadrado(LISTA* list)
     {
         x=r*cos(th*th_r)+x1;
         y=r*sin(th*th_r)+y1;
-        glVertex2f(x/Px+xmin,y/Py-ymin);
+        glVertex2f(x,y);
     }
     glEnd();
 }
@@ -100,10 +99,10 @@ void rectangulo(LISTA* list)
 {
     AsignaColor(list->color);
     glBegin(GL_LINE_LOOP);
-    glVertex2f(list->V[0].X/Px+xmin,list->V[0].Y/Py-ymin);
-    glVertex2f(list->V[0].X/Px+xmin,list->V[1].Y/Py-ymin);
-    glVertex2f(list->V[1].X/Px+xmin,list->V[1].Y/Py-ymin);
-    glVertex2f(list->V[1].X/Px+xmin,list->V[0].Y/Py-ymin);
+    glVertex2f(list->V[0].X,list->V[0].Y);
+    glVertex2f(list->V[0].X,list->V[1].Y);
+    glVertex2f(list->V[1].X,list->V[1].Y);
+    glVertex2f(list->V[1].X,list->V[0].Y);
     glEnd();
 }
 
@@ -114,7 +113,7 @@ void poligonoi(LISTA* list)
     glBegin(GL_LINE_LOOP);
     for(i=0;i<list->Nv;i++)
         {
-        glVertex2f(list->V[i].X/Px+xmin,list->V[i].Y/Py-ymin);
+        glVertex2f(list->V[i].X,list->V[i].Y);
         }
     glEnd();
 }
@@ -133,7 +132,7 @@ void circulo(LISTA* list)
     {
         x=r*cos(th*th_r)+x1;
         y=r*sin(th*th_r)+y1;
-        glVertex2f(x/Px+xmin,y/Py-ymin);
+        glVertex2f(x,y);
     }
     glEnd();
 }
@@ -150,7 +149,7 @@ void elipse(LISTA* list)
     for(th=0;th<360;th+=1){
         x=a*cos(th*th_r)+x1;
         y=b*sin(th*th_r)+y1;
-        glVertex2f(x/Px+xmin,y/Py-ymin);
+        glVertex2f(x,y);
     }
     glEnd();
 }
@@ -177,7 +176,7 @@ void ControlRaton( int button, int state, int x, int y )
     }
     if (button==GLUT_RIGHT_BUTTON && state==GLUT_DOWN)
     {
-
+        
         if(Figuras.index!=NULL)
         if ((Figuras.index->type==TYPEPOLIGONOI))
         {
@@ -278,7 +277,7 @@ void init(void)
 
 void cierre()
 {
-  printf("Cierre\n");
+  printf("Cierre Numero de figuras %d\n",Figuras.numero);
   if(Figuras.index!=NULL)
   {
       liberar(Figuras.index->V);
@@ -298,6 +297,7 @@ void cierre()
 void setlist(LISTA* list)
 {
     int i=0;
+    Figuras.numero++;
   if(Figuras.Plist==NULL)
   {
     Figuras.Plist=list;
@@ -325,7 +325,7 @@ void setlist(LISTA* list)
     {
       aux=aux->next;
     }
-
+    
     aux->next=list;
     aux->next->next=NULL;
     PUNTO *aux1,*Vector;
@@ -373,21 +373,22 @@ void setlistP(GLint x, GLint y)
         Figuras.index->Nx=Nx;
         Figuras.index->color=color;
     }
-
+        
     if(Figuras.index->V==NULL)
     {
         Figuras.index->V=(PUNTO*)malloc(sizeof(PUNTO));
         Figuras.index->V->next=NULL;
-        Figuras.index->V->X=x;
-        Figuras.index->V->Y=-y;
+        Figuras.index->V->X=x/Px+xmin;
+        Figuras.index->V->Y=-y/Py-ymin;
         Figuras.index->Nv++;
+        //x/Px+xmin,y/Py-ymin
     }
     else if( Figuras.index->V->next==NULL)
     {
         Figuras.index->V->next=(PUNTO*)malloc(sizeof(PUNTO));
         Figuras.index->V->next->next=NULL;
-        Figuras.index->V->next->X=x;
-        Figuras.index->V->next->Y=-y;
+        Figuras.index->V->next->X=x/Px+xmin;
+        Figuras.index->V->next->Y=-y/Py-ymin;
         Figuras.index->Nv++;
     }
     else
@@ -400,8 +401,8 @@ void setlistP(GLint x, GLint y)
         }
         aux->next=(PUNTO*)malloc(sizeof(PUNTO));
         aux->next->next=NULL;
-        aux->next->X=x;
-        aux->next->Y=-y;
+        aux->next->X=x/Px+xmin;
+        aux->next->Y=-y/Py-ymin;
         Figuras.index->Nv++;
     }
 }
@@ -440,3 +441,5 @@ void DibujarSelect()
 	glEnd();
     glDisable(GL_LINE_STIPPLE);// DESHABILITAMOS LA PROPIEDAD STIPPLE
 }
+
+

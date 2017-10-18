@@ -1,4 +1,3 @@
-/*Hecho por Dezcorjm*/
 #include "figuras.h"//linux
 
 int main(int argc, char** argv)
@@ -8,8 +7,7 @@ int main(int argc, char** argv)
   glutInitWindowPosition(100,100); //Posicion de la Ventana
   glutInitWindowSize(ANCHO,ALTO); //Tamaño de la Ventana(500,500)
   glutCreateWindow("PRIMITIVAS PAINT"); //Creacion de la Ventana y su Nombre
-  //glMatrixMode(GL_PROJECTION);
-  //Coordenadas(-x,x,-y,y)
+//inicialisa las variables.
   init();
  //Asignacion de Callbacks
   glutDisplayFunc(&display); //Asignacion de Callbacks
