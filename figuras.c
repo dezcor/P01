@@ -32,6 +32,8 @@ const GLdouble PaletaColor[27][3]={
 };
 //Variables Globles
 FIGURAS Figuras;
+int pushRaton=0;
+GLdouble m_x, m_y;
 COLOR color;
 DIBUJADO FiguraSelecionada[6];
 GLfloat xmin=-10,xmax=10,ymin=-10,ymax=10;
@@ -45,8 +47,9 @@ void display()
   glClearColor(PaletaColor[NEGRO][0],PaletaColor[NEGRO][1],PaletaColor[NEGRO][2],0); //Color de la Ventana
   dibujarFiguras();//Dibujar Figuras
   //color seleccionado
+  DibujarIndex();
   DibujarSelect();
-glFlush();
+  glFlush();
 }
 
 void dibujarFiguras()
@@ -164,9 +167,11 @@ void ControlRaton( int button, int state, int x, int y )
 {
     if (button==GLUT_LEFT_BUTTON && state==GLUT_DOWN)
     {
+        pushRaton=1;
         setlistP(x,y);
         if ((Figuras.index->type!=TYPEPOLIGONOI)&&Figuras.index->Nv==2)
         {
+            pushRaton=0;
             Figuras.index->color=color;
             Figuras.index->STIPPLE=STIPPLE;
             setlist(Figuras.index);
@@ -176,10 +181,11 @@ void ControlRaton( int button, int state, int x, int y )
     }
     if (button==GLUT_RIGHT_BUTTON && state==GLUT_DOWN)
     {
-        
+        pushRaton!=pushRaton;
         if(Figuras.index!=NULL)
         if ((Figuras.index->type==TYPEPOLIGONOI))
         {
+            pushRaton=0;
             setlistP(x,y);
             Figuras.index->color=color;
             Figuras.index->STIPPLE=STIPPLE;
@@ -251,6 +257,7 @@ void ControlTeclado(unsigned char key,int x,int y ){
             break;
                 }
     /* Le digo a OpenGL que dibuje de nuevo cuando pueda */
+    Cambio();
     glutPostRedisplay( );
 }
 
@@ -369,8 +376,8 @@ void setlistP(GLint x, GLint y)
         Figuras.index->V=NULL;
         Figuras.index->type=select_f;
         Figuras.index->Nv=0;
-        Figuras.index->STIPPLE=0;
-        Figuras.index->Nx=Nx;
+        Figuras.index->STIPPLE=1;
+        Figuras.index->Nx=Nx=0xFFFF;
         Figuras.index->color=color;
     }
         
@@ -381,6 +388,8 @@ void setlistP(GLint x, GLint y)
         Figuras.index->V->X=x/Px+xmin;
         Figuras.index->V->Y=-y/Py-ymin;
         Figuras.index->Nv++;
+        m_x=Figuras.index->V->X;
+        m_y=Figuras.index->V->Y;
         //x/Px+xmin,y/Py-ymin
     }
     else if( Figuras.index->V->next==NULL)
@@ -390,6 +399,8 @@ void setlistP(GLint x, GLint y)
         Figuras.index->V->next->X=x/Px+xmin;
         Figuras.index->V->next->Y=-y/Py-ymin;
         Figuras.index->Nv++;
+        m_x=Figuras.index->V->next->X;
+        m_y=Figuras.index->V->next->Y;
     }
     else
     {
@@ -404,6 +415,8 @@ void setlistP(GLint x, GLint y)
         aux->next->X=x/Px+xmin;
         aux->next->Y=-y/Py-ymin;
         Figuras.index->Nv++;
+        m_x=aux->next->X;
+        m_y=aux->next->Y;
     }
 }
 void liberar(PUNTO *V)
@@ -443,3 +456,57 @@ void DibujarSelect()
 }
 
 
+void Raton(int x1,int y1)
+{
+    if(pushRaton==1){
+        m_x=x1/Px+xmin;
+        m_y=-y1/Py-ymin;
+        Figuras.index->color=color;
+        glutPostRedisplay( );
+    }
+}
+
+void DibujarIndex(){
+    if(Figuras.index==NULL)return;
+   if(pushRaton==0)return;
+    int i=0;
+    PUNTO *aux,*Vector;
+    LISTA *predibujo;
+    aux=Figuras.index->V;
+    Vector=(PUNTO*)malloc(sizeof(PUNTO)*(Figuras.index->Nv+1));
+    for(i=0;i<Figuras.index->Nv;i++)
+    {
+        Vector[i].X=aux->X;
+        Vector[i].Y=aux->Y;
+        Vector[i].next=NULL;
+        aux=aux->next;
+    }
+    Vector[Figuras.index->Nv].X=m_x;
+    Vector[Figuras.index->Nv].Y=m_y;
+    predibujo=(LISTA*)malloc(sizeof(LISTA));
+    predibujo->V=Vector;   
+    predibujo->Nx=Figuras.index->Nx;
+    predibujo->Nv=Figuras.index->Nv+1;
+    predibujo->color=Figuras.index->color; 
+    predibujo->type=Figuras.index->type;
+    predibujo->STIPPLE=Figuras.index->STIPPLE;
+    glLineWidth(1.0);
+    if(predibujo->STIPPLE) glEnable(GL_LINE_STIPPLE);
+    glLineStipple(1, predibujo->Nx);
+    FiguraSelecionada[predibujo->type].Dibujar(predibujo);
+    if(predibujo->STIPPLE)glDisable(GL_LINE_STIPPLE);
+    //if(predibujo->V!=NULL)
+    //free(predibujo->V);
+    //(if(predibujo!=NULL)
+    free(predibujo);  
+    free(Vector);
+    //predibujo==NULL;
+}
+
+void Cambio()
+{
+    if(Figuras.index==NULL)return;
+    Figuras.index->STIPPLE=STIPPLE;
+    Figuras.index->Nx=Nx;
+    Figuras.index->color=color;
+}
