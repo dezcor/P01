@@ -54,7 +54,7 @@ char STIPPLE=0;
 void display()
 {
   glClear (GL_COLOR_BUFFER_BIT);//Seleccionar buffer a limpear
-  glClearColor(PaletaColor[NEGRO][0],PaletaColor[NEGRO][1],PaletaColor[NEGRO][2],0); //Color de la Ventana
+  glClearColor(PaletaColor[BLANCO][0],PaletaColor[BLANCO][1],PaletaColor[BLANCO][2],0); //Color de la Ventana
   dibujarFiguras();//Dibujar Figuras
   DibujarIndex();//Figura seleccionada
   DibujarSelect();//algo quitar de aqui
@@ -279,6 +279,7 @@ inline void init(void)
     Cx=0XF;
     Dx=0XF;
     Px=ANCHO/(xmax-xmin),Py=ALTO/(ymax-ymin);
+    glClearColor(PaletaColor[BLANCO][0],PaletaColor[BLANCO][1],PaletaColor[BLANCO][2],0);
     //Se asignan las funciones de dibujado.
     FiguraSelecionada[TYPELINEA].Dibujar=linea;
     FiguraSelecionada[TYPECUADRADO].Dibujar=cuadrado;
