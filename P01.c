@@ -1,3 +1,4 @@
+//Proyecto P01 Aplicación dedibujo asistidopor computadora
 #include "figuras.h"//linux
 
 int main(int argc, char** argv)
@@ -5,7 +6,7 @@ int main(int argc, char** argv)
   //Configuraciones Iniciales
   glutInit(&argc, argv);
   glutInitWindowPosition(100,100); //Posicion de la Ventana
-  glutInitWindowSize(ANCHO,ALTO); //Tamaño de la Ventana(500,500)
+  glutInitWindowSize(ANCHO,ALTO); //Tamaño de la Ventana
   glutCreateWindow("PRIMITIVAS PAINT"); //Creacion de la Ventana y su Nombre
 //inicialisa las variables.
   init();
@@ -15,7 +16,7 @@ int main(int argc, char** argv)
   glutMouseFunc(&ControlRaton );//control mouse
   //glutMotionFunc(&ControlMovimientoRaton );
   //glutMotionFunc();
-  glutCloseFunc(&cierre);
+  atexit(&cierre);
   glutPassiveMotionFunc(&Raton);
   glutReshapeFunc(&displayView); //Cambia el tamaño del ViewPoint
   //Estado de Espera de Eventos

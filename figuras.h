@@ -1,3 +1,4 @@
+//Proyecto P01 Aplicación dedibujo asistidopor computadora
 #ifndef _FIGURAS_H_
 #define _FIGURAS_H_
 
@@ -7,7 +8,7 @@
 #include <GL/glut.h>
 #define ALTO 500
 #define ANCHO 500
-
+//________________________________Paleta de colores.
 typedef enum{
   NEGRO,
   ZAFIRO,
@@ -38,7 +39,7 @@ typedef enum{
   BLANCO
 }COLOR;
 
-
+//identificador de figura.
 typedef enum{
   TYPELINEA,
   TYPECUADRADO,
@@ -47,13 +48,13 @@ typedef enum{
   TYPECIRCULO,
   TYPEELIPSE
 }TYPO_FIGURA;
-//Paleta de colores.
+//________________________________estructura de lista de puntos.
 typedef struct punto
 {
     GLdouble X,Y;
     struct punto *next;
 }PUNTO;
-
+//________________________________ estrctura de la lista.
 typedef struct lista{
   PUNTO * V;
   GLint Nv;
@@ -63,40 +64,43 @@ typedef struct lista{
   TYPO_FIGURA type;
   struct lista *next;
 }LISTA;
+//________________________________estrcutura para guardar index y lista asi como contar las figuras.
 typedef struct figuras{
     int numero;
   LISTA *index;
   LISTA *Plist;
 }FIGURAS;
-//dibujado
+//________________________________dibujado seleccion.
 typedef struct dibujado{
     void (*Dibujar)(LISTA* list);
 }DIBUJADO;
-//listaPuntos
+//________________________________listaPuntos
 void setlistP(GLint,GLint);
 void liberar(PUNTO *);
-//listaFiguras.
+//________________________________listaFiguras.
 void setlist(LISTA* list);
-//Funciones de dibujado.
 
+//________________________________funciones para el dibujado de figuras.
 void linea(LISTA* list);
 void cuadrado(LISTA* list);
 void rectangulo(LISTA* list);
 void poligonoi(LISTA* list);
 void circulo(LISTA* list);
 void elipse(LISTA* list);
-void display(void);
+//________________________________dibujado o cambio de valiables.
 void AsignaColor(COLOR color);
 void DibujarSelect();
+void DibujarIndex();
+void Cambio();
+void dibujarFiguras();
+void init(void);
+//________________________________callbacks
+void display(void);
 void displayView(GLsizei w,GLsizei h);
 //void ControlMovimientoRaton( GLsizei x, GLsizei y );
 void Raton(int x,int y);
-void DibujarIndex();
-void Cambio();
 void ControlRaton( GLint button, GLint state, GLint x, GLint y );
 void ControlTeclado( unsigned char key, GLint x, GLint y );
-void dibujarFiguras();
 void cierre();
-void init(void);
 
 #endif
