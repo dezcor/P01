@@ -37,7 +37,7 @@ GLdouble m_x, m_y;
 COLOR color;
 DIBUJADO FiguraSelecionada[6];
 GLfloat xmin=-10,xmax=10,ymin=-10,ymax=10;
-GLfloat Px,Py;
+GLfloat Px,Py,esclaOrtoX=1;
 TYPO_FIGURA select_f;
 GLint Ax,Bx,Cx,Dx,Nx;
 char STIPPLE=0;
@@ -46,9 +46,8 @@ void display()
   glClear (GL_COLOR_BUFFER_BIT);//Seleccionar buffer a limpear
   glClearColor(PaletaColor[NEGRO][0],PaletaColor[NEGRO][1],PaletaColor[NEGRO][2],0); //Color de la Ventana
   dibujarFiguras();//Dibujar Figuras
-  //color seleccionado
-  DibujarIndex();
-  DibujarSelect();
+  DibujarIndex();//Figura seleccionada
+  DibujarSelect();//algo quitar de aqui
   glFlush();
 }
 
@@ -83,10 +82,10 @@ void cuadrado(LISTA* list)
 {
     AsignaColor(list->color);
     GLdouble th=0,x,y,x1,y1,r,th_r=3.1415/180;
-    x=(list->V[0].X-list->V[1].X)/2;
-    y=(list->V[0].Y-list->V[1].Y)/2;
-    x1=(list->V[0].X+list->V[1].X)/2;
-    y1=(list->V[0].Y+list->V[1].Y)/2;
+    x=(list->V[0].X-list->V[1].X);
+    y=(list->V[0].Y-list->V[1].Y);
+    x1=(list->V[0].X);
+    y1=(list->V[0].Y);
     r=sqrt(x*x+y*y);
     glBegin(GL_LINE_LOOP);
     for(th=-45;th<405;th+=90)
@@ -116,7 +115,7 @@ void poligonoi(LISTA* list)
     glBegin(GL_LINE_LOOP);
     for(i=0;i<list->Nv;i++)
         {
-        glVertex2f(list->V[i].X,list->V[i].Y);
+            glVertex2f(list->V[i].X,list->V[i].Y);
         }
     glEnd();
 }
@@ -125,10 +124,10 @@ void circulo(LISTA* list)
 {
     AsignaColor(list->color);
     GLdouble th=0,x,y,x1,y1,r,th_r=3.1415/180;
-    x=(list->V[0].X-list->V[1].X)/2;
-    y=(list->V[0].Y-list->V[1].Y)/2;
-    x1=(list->V[0].X+list->V[1].X)/2;
-    y1=(list->V[0].Y+list->V[1].Y)/2;
+    x=(list->V[0].X-list->V[1].X);
+    y=(list->V[0].Y-list->V[1].Y);
+    x1=(list->V[0].X);
+    y1=(list->V[0].Y);
     r=sqrt(x*x+y*y);
     glBegin(GL_LINE_LOOP);
     for(th=0;th<360;th+=1)
@@ -284,7 +283,7 @@ void init(void)
 
 void cierre()
 {
-  printf("Cierre Numero de figuras %d\n",Figuras.numero);
+  printf("Cierre: Numero de figuras %d\n",Figuras.numero);
   if(Figuras.index!=NULL)
   {
       liberar(Figuras.index->V);
@@ -359,10 +358,11 @@ void setlist(LISTA* list)
 void displayView(GLsizei w,GLsizei h)
 {
   glViewport(0,0,w,h);
-  Px=w/(xmax-xmin),Py=h/(ymax-ymin);
+  esclaOrtoX=(GLdouble)w/h;
+  Px=w/(xmax*esclaOrtoX-xmin*esclaOrtoX),Py=h/(ymax-ymin);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluOrtho2D(xmin,xmax,ymin,ymax);
+  gluOrtho2D(xmin*esclaOrtoX,xmax*esclaOrtoX,ymin,ymax);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 }
@@ -385,7 +385,7 @@ void setlistP(GLint x, GLint y)
     {
         Figuras.index->V=(PUNTO*)malloc(sizeof(PUNTO));
         Figuras.index->V->next=NULL;
-        Figuras.index->V->X=x/Px+xmin;
+        Figuras.index->V->X=x/Px+xmin*esclaOrtoX;
         Figuras.index->V->Y=-y/Py-ymin;
         Figuras.index->Nv++;
         m_x=Figuras.index->V->X;
@@ -396,7 +396,7 @@ void setlistP(GLint x, GLint y)
     {
         Figuras.index->V->next=(PUNTO*)malloc(sizeof(PUNTO));
         Figuras.index->V->next->next=NULL;
-        Figuras.index->V->next->X=x/Px+xmin;
+        Figuras.index->V->next->X=x/Px+xmin*esclaOrtoX;
         Figuras.index->V->next->Y=-y/Py-ymin;
         Figuras.index->Nv++;
         m_x=Figuras.index->V->next->X;
@@ -412,7 +412,7 @@ void setlistP(GLint x, GLint y)
         }
         aux->next=(PUNTO*)malloc(sizeof(PUNTO));
         aux->next->next=NULL;
-        aux->next->X=x/Px+xmin;
+        aux->next->X=x/Px+xmin*esclaOrtoX;
         aux->next->Y=-y/Py-ymin;
         Figuras.index->Nv++;
         m_x=aux->next->X;
@@ -459,7 +459,7 @@ void DibujarSelect()
 void Raton(int x1,int y1)
 {
     if(pushRaton==1){
-        m_x=x1/Px+xmin;
+        m_x=x1/Px+xmin*esclaOrtoX;
         m_y=-y1/Py-ymin;
         Figuras.index->color=color;
         glutPostRedisplay( );
@@ -495,12 +495,8 @@ void DibujarIndex(){
     glLineStipple(1, predibujo->Nx);
     FiguraSelecionada[predibujo->type].Dibujar(predibujo);
     if(predibujo->STIPPLE)glDisable(GL_LINE_STIPPLE);
-    //if(predibujo->V!=NULL)
-    //free(predibujo->V);
-    //(if(predibujo!=NULL)
     free(predibujo);  
     free(Vector);
-    //predibujo==NULL;
 }
 
 void Cambio()
