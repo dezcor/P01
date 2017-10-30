@@ -1,6 +1,5 @@
 //Proyecto P01 Aplicación dedibujo asistidopor computadora
 #include "figuras.h"
-GLfloat xpos=0, zpos=0,next=0;
 //Paleta de Colores
 const GLdouble PaletaColor[27][3]={
     {0,0,0},
@@ -38,18 +37,22 @@ int pushRaton=0;
 //para dibujara el posible punto.
 GLdouble m_x, m_y;
 //color seleccionado global una ves que se guarada la figura el color no es modificable.
-COLOR color;
+COLOR SelectColor;
 //vector para seleccionar la figura a dibujar.
 DIBUJADO FiguraSelecionada[6];
 //valiables del glortho2D
 GLfloat xmin=-10,xmax=10,ymin=-10,ymax=10;
 //Escalares para el tamaño de la pantalla.
-GLfloat Px,Py,esclaOrtoX=1;
+GLfloat Px,Py;//esclaOrtoX=1;
+GLint ALTO=WALTO,ANCHO=WANCHO,SelectedForm=0;
 //Figura seleccionada.
 TYPO_FIGURA select_f;
 //Para el tipo de lineado
 GLint Ax,Bx,Cx,Dx,Nx;
 //Activar o desactivar el STIPPLE.
+GLint Grosor=1;
+char Coordenadas[40]="(0,0)";
+char TipoLinea[40]="0xFFFF";
 char STIPPLE=0;
 void display()
 {
@@ -57,7 +60,7 @@ void display()
   glClearColor(PaletaColor[BLANCO][0],PaletaColor[BLANCO][1],PaletaColor[BLANCO][2],0); //Color de la Ventana
   dibujarFiguras();//Dibujar Figuras
   DibujarIndex();//Figura seleccionada
-  DibujarSelect();//algo quitar de aqui
+  DrawInterface();//Dibujar interface
   glFlush();
 }
 
@@ -68,12 +71,13 @@ void dibujarFiguras()
   star=Figuras.Plist;//se toma el inicio en una valiable aparte. para recorrer la lista enlazada
   while(star!=NULL)//mientras star sea diferente de NULL segura en el siclo.
   {
-    glLineWidth(1.0);
+    glLineWidth(star->grosor);
     if(star->STIPPLE) glEnable(GL_LINE_STIPPLE);//Estilo de dibujado habilidado o desabilidado dependiendo de la figura.
     glLineStipple(1,star->Nx); //estilo de la linea.
     FiguraSelecionada[star->type].Dibujar(star);//figura a dibujar.
     if(star->STIPPLE)glDisable(GL_LINE_STIPPLE); // DESHABILITAMOS LA PROPIEDAD STIPPLE si esta fue habilitada.
     star=star->next;//siguiente figura.
+    glLineWidth(1.0);
   }
 }
 //Dibujado de una liena.
@@ -175,26 +179,30 @@ void ControlRaton( int button, int state, int x, int y )
 {
     if (button==GLUT_LEFT_BUTTON && state==GLUT_DOWN)//click sobre boton izquierdo  
     {
-        pushRaton=1;//badera de que se iniciado una figura. Esta se usa para dibujara la pre-figura.
-        setlistP(x,y);//se agrega el punto a una lista enlazada de puntos.
-        if ((Figuras.index->type!=TYPEPOLIGONOI)&&Figuras.index->Nv==2)//mientras no sea la figura poligono esta terminara cuando la lista llegue a 2 puntos.
+        if((x>=0)&&(x<=ANCHO)&&(y>=0)&&(y<=(ALTO/4)-(0.05*ALTO)))
+        Selection(x,y);
+        else
         {
-            pushRaton=0;//bandera de termino la figura.
-            setlist(Figuras.index);//se manda la figura a la lista enlazada de figuras.
+            pushRaton=1;//badera de que se iniciado una figura. Esta se usa para dibujara la pre-figura.
+            setlistP(x,y);//se agrega el punto a una lista enlazada de puntos.
+            if ((Figuras.index->type!=TYPEPOLIGONOI)&&Figuras.index->Nv==2)//mientras no sea la figura poligono esta terminara cuando la lista llegue a 2 puntos.
+            {
+                pushRaton=0;//bandera de termino la figura.
+                setlist(Figuras.index);//se manda la figura a la lista enlazada de figuras.
+            }
         }
-
         glutPostRedisplay();//se manda redibujar.
     }
     if (button==GLUT_RIGHT_BUTTON && state==GLUT_DOWN)//Este evento se usa para terminara el poligono.
     {
         if(Figuras.index!=NULL)//si no hay poligono aun no hace nada.
-        if ((Figuras.index->type==TYPEPOLIGONOI))
-        {
-            pushRaton=0;//cambio de bandera de pushRaton a para decir que no hay figura para el pre-dibujado de esta.
-            setlistP(x,y);//se agrega el punto a una lista enlazada de puntos.
-            setlist(Figuras.index);//se manda la figura a la lista enlazada de figuras.
-            glutPostRedisplay();//se manda redibujar.
-        }
+            if ((Figuras.index->type==TYPEPOLIGONOI))
+            {
+                pushRaton=0;//cambio de bandera de pushRaton a para decir que no hay figura para el pre-dibujado de esta.
+                setlistP(x,y);//se agrega el punto a una lista enlazada de puntos.
+                setlist(Figuras.index);//se manda la figura a la lista enlazada de figuras.
+                glutPostRedisplay();//se manda redibujar.
+            }
     }
 }
 
@@ -205,30 +213,36 @@ void ControlTeclado(unsigned char key,int x,int y ){
             STIPPLE=!STIPPLE;
             break;
         case 'z': case 'Z':
+	    SelectedForm=0;
             select_f=TYPELINEA;
             break;
         case 'x': case 'X':
+	    SelectedForm=1;
             select_f=TYPECUADRADO;
             break;
         case 'c': case 'C':
+	    SelectedForm=2;
             select_f=TYPERECTAGULO;
             break;
         case 'v': case 'V':
+	    SelectedForm=3;
             select_f=TYPEPOLIGONOI;
             break;
         case 'b': case 'B':
+	   SelectedForm=4;
             select_f=TYPECIRCULO;
             break;
         case 'n': case 'N':
+	    SelectedForm=5;
             select_f=TYPEELIPSE;
             break;
         case 'a': case 'A':
-            if(color<BLANCO)
-                color+=1;
+            if(SelectColor<BLANCO)
+            SelectColor+=1;
             break;
         case 's': case 'S':
-            if(color>NEGRO)
-                color-=1;
+            if(SelectColor>NEGRO)
+            SelectColor-=1;
             break;
         case 'q': case 'Q':
             if(Ax<0xf)
@@ -261,7 +275,37 @@ void ControlTeclado(unsigned char key,int x,int y ){
                 }
     /* Le digo a OpenGL que dibuje de nuevo cuando pueda */
     Cambio();
+    sprintf(TipoLinea,"0x%04x",Nx);
     glutPostRedisplay( );
+}
+
+void TeclaEspecial(int key,int x, int y)
+{
+	switch(key)
+	{
+        case GLUT_KEY_F1 :
+            if(Grosor<12)
+			    Grosor++;
+			break;
+		case GLUT_KEY_F2 :
+            if(Grosor>0)
+                Grosor--;
+			break;
+    }
+    Cambio();
+	glutPostRedisplay();
+}
+
+void DibujarTexto(char *Text,float x,float y)
+{
+    AsignaColor(NEGRO);
+	char *c;
+	glRasterPos2f(x,y);
+	for(c=Text;*c!='\0';c++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10,*c);
+	}
+	glutPostRedisplay();
 }
 
 //inicializacion de la valiables glovales.
@@ -271,7 +315,7 @@ inline void init(void)
     Figuras.Plist=NULL;
     Figuras.numero=0;
     select_f=TYPELINEA;
-    color=ZAFIRO;
+    SelectColor=ZAFIRO;
     STIPPLE=0;
     Nx=0xFFFF;
     Ax=0xF;
@@ -368,13 +412,15 @@ void displayView(GLsizei w,GLsizei h)
 {
   glViewport(0,0,w,h);
   //escala del Ortho2D en x;
-  esclaOrtoX=(GLdouble)w/h;
+  ALTO=h;
+  ANCHO=w;
+  //esclaOrtoX=(GLdouble)w/h;
   //Escalar Ortho2D a tamaño de la pantalla. en x y en y
-  Px=w/(xmax*esclaOrtoX-xmin*esclaOrtoX),Py=h/(ymax-ymin);
+  Px=w/(xmax-xmin),Py=h/(ymax-ymin);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   //redimenion del Ortho2D dependido de el escalar.
-  gluOrtho2D(xmin*esclaOrtoX,xmax*esclaOrtoX,ymin,ymax);
+  gluOrtho2D(xmin,xmax,ymin,ymax);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 }
@@ -388,16 +434,17 @@ void setlistP(GLint x, GLint y)
         Figuras.index->V=NULL;
         Figuras.index->type=select_f;
         Figuras.index->Nv=0;
-        Figuras.index->STIPPLE=1;
-        Figuras.index->Nx=Nx=0xFFFF;
-        Figuras.index->color=color;
+        Figuras.index->STIPPLE=STIPPLE;
+        Figuras.index->Nx=Nx;
+        Figuras.index->grosor=Grosor;
+        Figuras.index->color=SelectColor;
     }
         
     if(Figuras.index->V==NULL)//Crea la lista de puntos si esta no existe.
     {
         Figuras.index->V=(PUNTO*)malloc(sizeof(PUNTO));
         Figuras.index->V->next=NULL;
-        Figuras.index->V->X=x/Px+xmin*esclaOrtoX;//se convierte el pixel en cordenadas del Ortho2D;
+        Figuras.index->V->X=x/Px+xmin;//*esclaOrtoX;//se convierte el pixel en cordenadas del Ortho2D;
         Figuras.index->V->Y=-y/Py-ymin;//se convierte el pixel en cordenadas del Ortho2D;
         Figuras.index->Nv++;//aumenta el numero de puntos.
         m_x=Figuras.index->V->X;//para el predibujado se inicia en el punto inicial.
@@ -408,7 +455,7 @@ void setlistP(GLint x, GLint y)
     {
         Figuras.index->V->next=(PUNTO*)malloc(sizeof(PUNTO));
         Figuras.index->V->next->next=NULL;
-        Figuras.index->V->next->X=x/Px+xmin*esclaOrtoX;
+        Figuras.index->V->next->X=x/Px+xmin;//*esclaOrtoX;
         Figuras.index->V->next->Y=-y/Py-ymin;
         Figuras.index->Nv++;
         m_x=Figuras.index->V->next->X;
@@ -424,7 +471,7 @@ void setlistP(GLint x, GLint y)
         }
         aux->next=(PUNTO*)malloc(sizeof(PUNTO));
         aux->next->next=NULL;
-        aux->next->X=x/Px+xmin*esclaOrtoX;
+        aux->next->X=x/Px+xmin;//*esclaOrtoX;
         aux->next->Y=-y/Py-ymin;
         Figuras.index->Nv++;
         m_x=aux->next->X;
@@ -452,29 +499,26 @@ void liberar(PUNTO *V)
     }
 }
 
-void DibujarSelect()
-{
-    AsignaColor(color);		//COLOR
-	glPointSize(25.0);		//TAMAÑO PUNTO
-	glBegin(GL_POINTS);		//DEFINIMOS PRIMITIVA POINTS
-	glVertex2f(9,9); 	//DIBUJAMOS PUNTO
-	glEnd();
-    glEnable(GL_LINE_STIPPLE); // HABILITAMOS LA PROPIEDAD STIPPLE
-	glLineWidth(10.0); // ANCHO LINEA
-	glLineStipple(3,Nx); // Dash Line ( pixeles por linea, patron linea punteada (HEXADECIMAL))
-	glBegin(GL_LINES);
-	glVertex2f(-9,9);
-	glVertex2f(9,9);
-	glEnd();
-    glDisable(GL_LINE_STIPPLE);// DESHABILITAMOS LA PROPIEDAD STIPPLE
-}
 
 //raton pasivo.
 void Raton(int x1,int y1)
 {
+    sprintf(Coordenadas,"(%i,%i)",x1,y1);
     if(pushRaton==1)//si se esta creando una figura se pre-dibuja.
     {   //Conversion de cordenadas.
-        m_x=x1/Px+xmin*esclaOrtoX;
+        m_x=x1/Px+xmin;//*esclaOrtoX;
+        m_y=-y1/Py-ymin;
+        glutPostRedisplay( );
+    }
+}
+
+void RatonActivo(int x1,int y1)
+{
+    sprintf(Coordenadas,"(%i,%i)",x1,y1);
+    if(pushRaton==1)//si se esta creando una figura se pre-dibuja.
+    {   //Conversion de cordenadas.
+
+        m_x=x1/Px+xmin;//*esclaOrtoX;
         m_y=-y1/Py-ymin;
         glutPostRedisplay( );
     }
@@ -508,14 +552,16 @@ void DibujarIndex()
     predibujo->Nv=Figuras.index->Nv+1;
     predibujo->color=Figuras.index->color; 
     predibujo->type=Figuras.index->type;
+    predibujo->grosor=Grosor;
     predibujo->STIPPLE=Figuras.index->STIPPLE;
     //Dibuajdo de la figura.
-    glLineWidth(1.0);
+    glLineWidth(predibujo->grosor);
     if(predibujo->STIPPLE) glEnable(GL_LINE_STIPPLE);
     glLineStipple(1, predibujo->Nx);
     FiguraSelecionada[predibujo->type].Dibujar(predibujo);
     if(predibujo->STIPPLE)glDisable(GL_LINE_STIPPLE);
     //Liberacion del vector y figura.
+    glLineWidth(1.0);
     free(predibujo);  
     free(Vector);
 }
@@ -526,5 +572,317 @@ void Cambio()
     if(Figuras.index==NULL)return;//si no existe termina.
     Figuras.index->STIPPLE=STIPPLE;
     Figuras.index->Nx=Nx;
-    Figuras.index->color=color;
+    Figuras.index->color=SelectColor;
+    Figuras.index->grosor=Grosor;
 }
+
+
+
+void Selection(int x,int y)
+{
+	//(Delta1*ANCHO*1.0)+((Delta2*Ancho)/2.0)
+	
+	float PPPANCHO=ANCHO/20.0;
+	float PPPALTO=ALTO/20.0;
+	//SELECCION DEL COLOR
+    float Delta1=0.01,Delta2=0.0825,Aux=0.8;
+	if((x>=Delta1*ANCHO)&&(x<=(Delta2*ANCHO)/2.0)&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=BLANCO;
+	else if((x>=(Delta1*ANCHO)*(1.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(1.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=MARFIL;
+	else if((x>=(Delta1*ANCHO)*(2.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(2.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=AMARILLO;
+	else if((x>=(Delta1*ANCHO)*(3.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(3.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=MALVA;
+	else if((x>=(Delta1*ANCHO)*(4.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(4.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=SALMON;
+	else if((x>=(Delta1*ANCHO)*(5.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(5.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=NARANJA;
+	else if((x>=(Delta1*ANCHO)*(6.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(6.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=VIOLETA;
+	else if((x>=(Delta1*ANCHO)*(7.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(7.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=ROSA;
+	else if((x>=(Delta1*ANCHO)*(8.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(8.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=ROJO;
+	else if((x>=(Delta1*ANCHO)*(9.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(9.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=CYAN_BAJO;
+	else if((x>=(Delta1*ANCHO)*(10.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(10.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=VERDE_AGUA;
+	else if((x>=(Delta1*ANCHO)*(11.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(11.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=CHARTREUSE;
+	else if((x>=(Delta1*ANCHO)*(12.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(12.0+Aux))&&(y>=Delta1*ALTO)&&(y<=(Delta2*ALTO)/2.0))
+		SelectColor=CELESTE;
+//Segunda Linea de Colores.
+	else if((x>=Delta1*ANCHO)&&(x<=(Delta2*ANCHO)/2.0)&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=GRIS;
+	else if((x>=(Delta1*ANCHO)*(1.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(1.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=LIMA;
+	else if((x>=(Delta1*ANCHO)*(2.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(2.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=MORADO;
+	else if((x>=(Delta1*ANCHO)*(3.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(3.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=FUCSIA;
+	else if((x>=(Delta1*ANCHO)*(4.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(4.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=ROJO_OSCURO;
+	else if((x>=(Delta1*ANCHO)*(5.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(5.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=CYAN;
+	else if((x>=(Delta1*ANCHO)*(6.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(6.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=VERDE_BAJO;
+	else if((x>=(Delta1*ANCHO)*(7.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(7.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=VERDE;
+	else if((x>=(Delta1*ANCHO)*(8.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(8.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=AZUL_CLARO;
+	else if((x>=(Delta1*ANCHO)*(9.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(9.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=TRUQUESA;
+	else if((x>=(Delta1*ANCHO)*(10.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(10.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=VERDE_KELLY;
+	else if((x>=(Delta1*ANCHO)*(11.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(11.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=AZUL;
+	else if((x>=(Delta1*ANCHO)*(12.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(12.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=ZAFIRO;
+	else if((x>=(Delta1*ANCHO)*(13.0+Aux))&&(x<=((Delta2*ANCHO)/2.0)*(13.0+Aux))&&(y>=((Delta1+Delta2)*ALTO)/2.0)&&(y<=(Delta2*ALTO)))
+		SelectColor=NEGRO;
+	//Empiezan los botones de las figuras.
+	else if((x>=(-9.3+10.0)*PPPANCHO)&&(x<=(-7.4+10.0)*PPPANCHO)&&(y>=((-1)*(7.9-10))*PPPALTO)&&(y<=(-1)*(6-10)*PPPALTO)){
+        select_f=TYPELINEA;
+	SelectedForm=0;
+	}else if((x>=(-5.97+10.0)*PPPANCHO)&&(x<=(-4.07+10.0)*PPPANCHO)&&(y>=((-1)*(7.9-10))*PPPALTO)&&(y<=(-1)*(6-10)*PPPALTO)){
+        select_f=TYPECUADRADO;
+	SelectedForm=1;
+	}else if((x>=(-2.64+10.0)*PPPANCHO)&&(x<=(-0.74+10.0)*PPPANCHO)&&(y>=((-1)*(7.9-10))*PPPALTO)&&(y<=(-1)*(6-10)*PPPALTO)){
+		//Asignar Figura Rectangulo
+		SelectedForm=2;
+		select_f=TYPERECTAGULO;
+	}else if((x>=(0.69+10.0)*PPPANCHO)&&(x<=(2.59+10.0)*PPPANCHO)&&(y>=((-1)*(7.9-10))*PPPALTO)&&(y<=(-1)*(6-10)*PPPALTO)){
+		SelectedForm=3;
+		//Asignar Figura POLIGONO
+		select_f=TYPEPOLIGONOI;
+	}else if((x>=(4.024+10.0)*PPPANCHO)&&(x<=(5.92+10.0)*PPPANCHO)&&(y>=((-1)*(7.9-10))*PPPALTO)&&(y<=(-1)*(6-10)*PPPALTO)){
+		SelectedForm=4;
+		//Asignar Figura CIRCULO
+		select_f=TYPECIRCULO;
+	}else if((x>=(7.35+10.0)*PPPANCHO)&&(x<=(9.25+10.0)*PPPANCHO)&&(y>=((-1)*(7.9-10))*PPPALTO)&&(y<=(-1)*(6-10)*PPPALTO)){
+		SelectedForm=5;
+		//Asignar Figura ELIPSE
+		select_f=TYPEELIPSE;
+	}
+	Cambio();
+}
+
+void DrawInterface()
+{
+	glColor3f(0.8,0.8,0.8);//Se crea en rectangulo que contiene la interfaz
+	glRectf(-9.95,9.95,10.0,5.95);
+	RECTANGULO RecInter;
+	RecInter.X=-9.95;
+	RecInter.Y=9.95;
+	RecInter.ancho=19.95;
+	RecInter.alto=4;
+	AsignaColor(BLANCO);
+	rectangulo_(&RecInter);
+	int i;
+	float x=-9.9,y=9.9,Delta=0.8;
+	CUADRADO CuadColor[27];
+	for(i=0;i<13;i++)
+	{
+		//Primera Linea de Colores.
+		AsignaColor(BLANCO-i);//Se crea el rectangulo que muestra el color
+		glRectf(x+(i*(Delta)),y,x+(i*(Delta))+0.75,y-0.75);
+		CuadColor[i].X=x+(i*(Delta)); //Se crea el rectangulo blanco que muestra el color.
+		CuadColor[i].Y=y;
+		CuadColor[i].Lado=0.75;
+		AsignaColor(BLANCO);
+		cuadrado_(&CuadColor[i]);
+		
+		//Segunda Linea de Colores.
+		AsignaColor(BLANCO-(13+i));
+		glRectf(x+(i*(Delta)),y-0.85,x+(i*(Delta))+0.75,y-1.6);
+		CuadColor[14+i].X=x+(i*(Delta));
+		CuadColor[14+i].Y=y-0.85;
+		CuadColor[14+i].Lado=0.75;
+		AsignaColor(BLANCO);
+		cuadrado_(&CuadColor[(14+i)]);
+		//glRectf(x+(i*(Delta)),y,i*(Delta)+0.75,y-0.75);
+		
+	}
+	
+	AsignaColor(BLANCO-(13+i));
+	glRectf(x+(i*(Delta)),y-0.85,x+(i*(Delta))+0.75,y-1.6);
+	CuadColor[26].X=x+(i*(Delta));
+	CuadColor[26].Y=y-0.85;
+	CuadColor[26].Lado=0.75;
+	AsignaColor(BLANCO);
+	cuadrado_(&CuadColor[(26)]);
+	Delta=3.33;
+	y=7.9;
+	x=-9.3;
+	CUADRADO CuadForm[6];
+	AsignaColor(BLANCO);
+	DibujarTexto("Selected Color : ",2.8,9.35);
+	AsignaColor(SelectColor);
+	glRectf(3.0,9.25,3.75,8.5);
+	for(i=0;i<6;i++)
+	{
+		if(select_f==i)
+            AsignaColor(VERDE);
+        else
+		    AsignaColor(NEGRO);
+		//Se crean los botones
+		CuadForm[i].X=x+(i*(Delta));
+		CuadForm[i].Y=y;
+		CuadForm[i].Lado=1.9;
+		//AsignaColor(BLANCO);
+		cuadrado_(&CuadForm[i]);
+		LINEA line;
+		CUADRADO cuad;
+        RECTANGULO rec;
+        POLIGONO poli;
+        poli.NLados=4;
+        PUNTOS Vector[4],centroP;
+        poli.V=Vector;
+		CIRCULO cir;
+		ELIPSE eli;
+		//Se crean las figuras.
+		switch(i)
+		{
+			case 0:
+					line.Xi= x+(i*(Delta)) + 0.4;
+					line.Yi= y -0.4;
+					line.Xf= x+(i*(Delta)) - 0.4 +1.9;
+					line.Yf=  y  -1.6;
+					//glPointSize(10.0);
+					linea_(&line);
+				break;
+			case 1:
+					cuad.X=x+(i*(Delta)) + 0.4;
+					cuad.Y=y -0.4;
+					cuad.Lado= 1.1;
+					cuadrado_(&cuad);
+				break;
+
+			case 2:
+					rec.X=x+(i*(Delta)) + 0.4;
+					rec.Y= y -0.6;
+					rec.ancho=1.1;
+					rec.alto=0.8;
+					rectangulo_(&rec);
+				break;
+            case 3:
+                    centroP.X=x+(i*(Delta)) + 0.2;
+                    centroP.Y= y -2;
+                    poli.V[0].X=centroP.X+0;
+                    poli.V[0].Y=centroP.Y+1;
+                    poli.V[1].X=centroP.X+0.5;
+                    poli.V[1].Y=centroP.Y+1.5;
+                    poli.V[2].X=centroP.X+1;
+                    poli.V[2].Y=centroP.Y+1.5;
+                    poli.V[3].X=centroP.X+1.5;
+                    poli.V[3].Y=centroP.Y+1;
+                    poligonoi_(&poli);
+				break;
+			case 4:
+					//glRectf(x+(i*(Delta)) + 0.95,9.9,x+(i*(Delta)) + 1.8,9.9-0.86);
+					
+					cir.x0=x+(i*(Delta)) + 0.95;
+					cir.y0=y-0.95;
+					cir.r=0.5;
+					circulo_(&cir);
+				break;
+			case 5:
+					eli.x0=x+(i*(Delta)) + 0.95;
+					eli.y0=cir.y0=y-0.95;
+					eli.r=0.5;
+					eli.a=0.5;
+					eli.b=0.3;
+					eli.th=0.1;
+					elipse_(&eli);
+				break;
+			default:
+				break;
+		}
+    }
+    DibujarTexto("Tipo de linea :",6,9.35);
+    DibujarTexto("Grosor :",6,9);
+    DibujarTexto(TipoLinea,8,9.35);
+    DibujarSelect();
+    DibujarTexto(Coordenadas,6,-9.9);	
+}
+
+void DibujarSelect()
+{
+    AsignaColor(SelectColor);		//COLOR
+    if(STIPPLE)glEnable(GL_LINE_STIPPLE); // HABILITAMOS LA PROPIEDAD STIPPLE
+    glLineWidth(Grosor);// ANCHO LINEA
+	glLineStipple(3,Nx); // Dash Line ( pixeles por linea, patron linea punteada (HEXADECIMAL))
+	glBegin(GL_LINES);
+	glVertex2f(7.5,9.1);
+    glVertex2f(9.5,9.1);
+    glEnd();
+    glLineWidth(1.0);
+    if(STIPPLE)glDisable(GL_LINE_STIPPLE);// DESHABILITAMOS LA PROPIEDAD STIPPLE
+}
+
+void linea_(LINEA *l){
+    glBegin(GL_LINES);
+    glVertex2f(l->Xi,l->Yi);
+    glVertex2f(l->Xf,l->Yf);
+    glEnd();
+}
+
+
+
+void cuadrado_(CUADRADO *C)
+{
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(C->X,C->Y);
+    glVertex2f(C->X+C->Lado,C->Y);
+    glVertex2f(C->X+C->Lado,C->Y-C->Lado);
+    glVertex2f(C->X,C->Y-C->Lado);
+    glEnd();
+}
+
+
+void rectangulo_(RECTANGULO *R)
+{
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(R->X,R->Y);
+    glVertex2f(R->X+R->ancho,R->Y);
+    glVertex2f(R->X+R->ancho,R->Y-R->alto);
+    glVertex2f(R->X,R->Y-R->alto);
+    glEnd();
+}
+
+void poligonoi_(POLIGONO *P)
+{
+    unsigned char i;
+    glBegin(GL_LINE_LOOP);
+    for(i=0;i<P->NLados;i++)
+    {
+        glVertex2f(P->V[i].X,P->V[i].Y);
+    }
+    glEnd();
+}
+
+void circulo_(CIRCULO *C){
+    GLdouble th=0,x,y,th_r=3.1415/180;
+    glBegin(GL_LINE_LOOP);
+    for(th=0;th<360;th+=1){
+        x=C->r*cos(th*th_r)+C->x0;
+        y=C->r*sin(th*th_r)+C->y0;
+        glVertex2f(x,y);
+    }
+    glEnd();
+}
+
+void elipse_(ELIPSE *E){
+    GLdouble th=0,x,y,x1,y1,th_r=3.1415/180;
+    glBegin(GL_LINE_LOOP);
+    for(th=0;th<360;th+=1){
+        x=E->a*cos(th*th_r);
+        y=E->b*sin(th*th_r);
+        x1=x*cos(E->th*th_r)-sin(E->th*th_r)*y+E->x0;
+        y1=x*sin(E->th*th_r)+cos(E->th*th_r)*y+E->y0;
+        glVertex2f(x1,y1);
+    }
+    glEnd();
+}
+
