@@ -1,4 +1,4 @@
-//Proyecto P01 Aplicación dedibujo asistidopor computadora
+//Proyecto P01 Aplicación de dibujo asistidopor computadora
 #ifndef _FIGURAS_H_
 #define _FIGURAS_H_
 

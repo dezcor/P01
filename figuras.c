@@ -1,4 +1,4 @@
-//Proyecto P01 Aplicación dedibujo asistidopor computadora
+//Proyecto P01 Aplicación de dibujo asistidopor computadora
 #include "figuras.h"
 //Paleta de Colores
 const GLdouble PaletaColor[27][3]={
@@ -305,7 +305,6 @@ void DibujarTexto(char *Text,float x,float y)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10,*c);
 	}
-	glutPostRedisplay();
 }
 
 //inicializacion de la valiables glovales.
@@ -508,8 +507,8 @@ void Raton(int x1,int y1)
     {   //Conversion de cordenadas.
         m_x=x1/Px+xmin;//*esclaOrtoX;
         m_y=-y1/Py-ymin;
-        glutPostRedisplay( );
     }
+    glutPostRedisplay( );
 }
 
 void RatonActivo(int x1,int y1)

@@ -1,4 +1,4 @@
-//Proyecto P01 Aplicación dedibujo asistidopor computadora
+//Proyecto P01 Aplicación de dibujo asistidopor computadora
 #include "figuras.h"//linux
 
 int main(int argc, char** argv)
