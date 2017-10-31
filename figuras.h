@@ -132,6 +132,7 @@ void rectangulo(LISTA* list);
 void poligonoi(LISTA* list);
 void circulo(LISTA* list);
 void elipse(LISTA* list);
+//________________________________inteface.
 void linea_(LINEA *l);
 void cuadrado_(CUADRADO *C);
 void rectangulo_(RECTANGULO *R);

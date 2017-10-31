@@ -15,7 +15,7 @@ int main(int argc, char** argv)
   glutKeyboardFunc(&ControlTeclado );//controd de teclado
   glutMouseFunc(&ControlRaton );//control mouse
   glutMotionFunc(&RatonActivo);
-  atexit(&cierre);
+  atexit(&cierre);//para liberar la memoria el cierre de la aplicacion.
   glutSpecialFunc(&TeclaEspecial);
   glutPassiveMotionFunc(&Raton);
   glutReshapeFunc(&displayView); //Cambia el tamaño del ViewPoint

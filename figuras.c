@@ -80,6 +80,7 @@ void dibujarFiguras()
     glLineWidth(1.0);
   }
 }
+
 //Dibujado de una liena.
 void linea(LISTA* list)
 {
@@ -89,6 +90,7 @@ void linea(LISTA* list)
     glVertex2f(list->V[1].X,list->V[1].Y);//punto final.
     glEnd();//termino de primitiva.
 }
+
 //Dibujado de cuadrado.
 void cuadrado(LISTA* list)
 {
@@ -106,6 +108,7 @@ void cuadrado(LISTA* list)
     }
     glEnd();//termina la primitiva
 }
+
 //Dibujado del rectangulo.
 void rectangulo(LISTA* list)
 {
@@ -180,7 +183,7 @@ void ControlRaton( int button, int state, int x, int y )
     if (button==GLUT_LEFT_BUTTON && state==GLUT_DOWN)//click sobre boton izquierdo  
     {
         if((x>=0)&&(x<=ANCHO)&&(y>=0)&&(y<=(ALTO/4)-(0.05*ALTO)))
-        Selection(x,y);
+            Selection(x,y);
         else
         {
             pushRaton=1;//badera de que se iniciado una figura. Esta se usa para dibujara la pre-figura.
@@ -195,18 +198,20 @@ void ControlRaton( int button, int state, int x, int y )
     }
     if (button==GLUT_RIGHT_BUTTON && state==GLUT_DOWN)//Este evento se usa para terminara el poligono.
     {
-        if(Figuras.index!=NULL)//si no hay poligono aun no hace nada.
-            if ((Figuras.index->type==TYPEPOLIGONOI))
-            {
-                pushRaton=0;//cambio de bandera de pushRaton a para decir que no hay figura para el pre-dibujado de esta.
-                setlistP(x,y);//se agrega el punto a una lista enlazada de puntos.
-                setlist(Figuras.index);//se manda la figura a la lista enlazada de figuras.
-                glutPostRedisplay();//se manda redibujar.
-            }
+        if(((x>=0)&&(x<=ANCHO)&&(y>=0)&&(y<=(ALTO/4)-(0.05*ALTO)))==0)
+            if(Figuras.index!=NULL)//si no hay poligono aun no hace nada.
+                if ((Figuras.index->type==TYPEPOLIGONOI)&&Figuras.index->Nv>=2)
+                {
+                    pushRaton=0;//cambio de bandera de pushRaton a para decir que no hay figura para el pre-dibujado de esta.
+                    setlistP(x,y);//se agrega el punto a una lista enlazada de puntos.
+                    setlist(Figuras.index);//se manda la figura a la lista enlazada de figuras.
+                    glutPostRedisplay();//se manda redibujar.
+                }
     }
 }
 
-void ControlTeclado(unsigned char key,int x,int y ){
+void ControlTeclado(unsigned char key,int x,int y )
+{
     /* Según la tecla pulsada incremento una u otra variable de movimiento */
     switch(key){
         case 'd': case 'D':
@@ -290,7 +295,11 @@ void TeclaEspecial(int key,int x, int y)
 		case GLUT_KEY_F2 :
             if(Grosor>0)
                 Grosor--;
-			break;
+            break;
+        case GLUT_KEY_END:
+            cierre();
+            init();
+            break;
     }
     Cambio();
 	glutPostRedisplay();
@@ -304,7 +313,7 @@ void DibujarTexto(char *Text,float x,float y)
 	for(c=Text;*c!='\0';c++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10,*c);
-	}
+    }
 }
 
 //inicializacion de la valiables glovales.
@@ -316,6 +325,7 @@ inline void init(void)
     select_f=TYPELINEA;
     SelectColor=ZAFIRO;
     STIPPLE=0;
+    Grosor=1;
     Nx=0xFFFF;
     Ax=0xF;
     Bx=0XF;
@@ -343,7 +353,7 @@ void cierre()
     }
     if(Figuras.Plist==NULL)return;// Si no hay figuras termina.
     LISTA *aux;
-    while(Figuras.Plist->next!=NULL)
+    while(Figuras.Plist!=NULL)
     {
         free(Figuras.Plist->V);//liberacion del vector.
         aux=Figuras.Plist;//guarda la figura actual.
@@ -409,19 +419,19 @@ void setlist(LISTA* list)
 //Redimencion de la ventana.
 void displayView(GLsizei w,GLsizei h)
 {
-  glViewport(0,0,w,h);
-  //escala del Ortho2D en x;
-  ALTO=h;
-  ANCHO=w;
-  //esclaOrtoX=(GLdouble)w/h;
-  //Escalar Ortho2D a tamaño de la pantalla. en x y en y
-  Px=w/(xmax-xmin),Py=h/(ymax-ymin);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  //redimenion del Ortho2D dependido de el escalar.
-  gluOrtho2D(xmin,xmax,ymin,ymax);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+    glViewport(0,0,w,h);
+    //escala del Ortho2D en x;
+    ALTO=h;
+    ANCHO=w;
+    //esclaOrtoX=(GLdouble)w/h;
+    //Escalar Ortho2D a tamaño de la pantalla. en x y en y
+    Px=w/(xmax-xmin),Py=h/(ymax-ymin);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    //redimenion del Ortho2D dependido de el escalar.
+    gluOrtho2D(xmin,xmax,ymin,ymax);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 //Insercion de punto en lista enlazada.
@@ -489,7 +499,7 @@ void liberar(PUNTO *V)
     else
     {
         PUNTO *aux;
-        while(V->next!=NULL)// si es lista.
+        while(V!=NULL)// si es lista.
         {
             aux=V;
             free(aux);
@@ -575,8 +585,7 @@ void Cambio()
     Figuras.index->grosor=Grosor;
 }
 
-
-
+//Colisiones.
 void Selection(int x,int y)
 {
 	//(Delta1*ANCHO*1.0)+((Delta2*Ancho)/2.0)
@@ -670,10 +679,10 @@ void Selection(int x,int y)
 void DrawInterface()
 {
 	glColor3f(0.8,0.8,0.8);//Se crea en rectangulo que contiene la interfaz
-	glRectf(-9.95,9.95,10.0,5.95);
+	glRectf(-10,10,10.0,5.95);
 	RECTANGULO RecInter;
-	RecInter.X=-9.95;
-	RecInter.Y=9.95;
+	RecInter.X=-9.99;
+	RecInter.Y=9.99;
 	RecInter.ancho=19.95;
 	RecInter.alto=4;
 	AsignaColor(BLANCO);
